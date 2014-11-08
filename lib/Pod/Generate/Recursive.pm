@@ -1,6 +1,7 @@
 package Pod::Generate::Recursive;
 
-use Modern::Perl '2011';
+use strict;
+use warnings;
 
 use vars qw{
   $VERSION
@@ -10,14 +11,14 @@ use vars qw{
   $source
   $destination
   $debug
-};
+  };
 
-BEGIN 
+BEGIN
 {
     require Exporter;
 
-    @ISA    = qw( Exporter );
-    @EXPORT = qw( debug destination source);
+    @ISA       = qw( Exporter );
+    @EXPORT    = qw( debug destination source);
     @EXPORT_OK = qw( );
 }
 
@@ -28,19 +29,17 @@ use Path::Class;
 use Pod::POM;
 use Pod::POM::View::Pod;
 
-
 =head1 NAME
 
 Pod::Generate::Recursive - Generate POD for directory contents. 
 
 =head1 VERSION
 
-Version 0.01
+Version 0.02
 
 =cut
 
 our $VERSION = '0.01';
-
 
 =head1 SYNOPSIS
 
@@ -54,49 +53,53 @@ our $VERSION = '0.01';
 
 =cut
 
-
 =head1 SUBROUTINES/METHODS
 
 =cut
 
-sub run 
+my %files = ();
+
+sub run
 {
     my ($self) = @_;
 
     my (
         $directory, $file, $filehandle, $filename,  $newbase,
         $parser,    $pod,  $pom,        $targetdir, $oldfile
-    )
-    = (undef, undef, undef, undef, undef, undef, undef, undef, undef, undef);
-    my %files = ();
+       )
+      = (undef, undef, undef, undef, undef, undef, undef, undef, undef, undef);
 
     die "ERROR: Source directory cannot be empty.\n" if !$self->{source};
 
-    die "ERROR: Destination directory cannot be empty.\n" if !$self->{destination};
+    die "ERROR: Destination directory cannot be empty.\n"
+      if !$self->{destination};
 
     if (!-d $self->{destination})
     {
-        make_path $self->{destination} or die "Failed to create $self->{destination}.\n";
+        make_path $self->{destination}
+          or die "Failed to create $self->{destination}.\n";
     }
 
     finddepth(\&_wanted, ($self->{source}));
 
-    if ($self->{debug}) { print Dumper(%files) };
+    if ($self->{debug}) { print Dumper(%files) }
 
-    while (($filename, $directory) = each $self->{files})
+    while (($filename, $directory) = each %files)
     {
         $newbase = File::Spec->catdir(($self->{destination}, $directory));
-        $oldfile = File::Spec->catdir(($directory,   $filename));
-        if ($self->{debug}) { print $newbase . "\n" };
+        $oldfile = File::Spec->catdir(($directory, $filename));
+        if ($self->{debug}) { print $newbase . "\n" }
         if (!-d $newbase)
         {
             make_path $newbase or die "Failed to create $newbase.\n";
         }
 
-        $pom       = $self->{parser}->parse_file($oldfile) || die $parser->error();
-        $pod       = Pod::POM::View::Pod->print($pom);
+        $pom = $self->{parser}->parse_file($oldfile) || die $parser->error();
+        $pod = Pod::POM::View::Pod->print($pom);
         $targetdir = dir($newbase);
-        $file      = $targetdir->file($filename);
+
+        ## Should we change the extension to pod?
+        $file = $targetdir->file($filename);
 
         ## Missing docs
         if ($pod eq "")
@@ -107,30 +110,27 @@ sub run
         $filehandle = $file->openw();
         $filehandle->print($pod . "\n");
         $filehandle->close;
-
     }
 
-    sub _wanted
-    {
-        ## No hidden files
-        return if $_ =~ m/^\./;
+}
 
-        ## Skip default catalyst files
-        return if $_ =~ m/$self->{source}\_{1}/;
+sub _wanted
+{
+    ## No hidden files
+    return if $_ =~ m/^\./;
 
-        ## Skip dirs
-        return if !-f $_;
+    ## Skip dirs
+    return if !-f $_;
 
-        print $_ . "\n";
+    print $_ . "\n";
 
-        $self->{files}{"$_"} = "$File::Find::dir" if $_ =~ /\.p[ml]/;
+    $files{"$_"} = "$File::Find::dir" if $_ =~ /\.p[ml]/;
 
-    }
 }
 
 sub debug
 {
-    my ($self,$debug) = @_;
+    my ($self, $debug) = @_;
     if ($debug)
     {
         $self->{debug} = $debug;
@@ -138,13 +138,13 @@ sub debug
     return $self->{debug};
 }
 
-sub destination 
+sub destination
 {
     my ($self, $destination) = @_;
     if ($destination)
     {
         $self->{destination} = $destination;
-    }    
+    }
     return $self->{destination};
 }
 
@@ -153,20 +153,20 @@ sub source
     my ($self, $source) = @_;
     if ($source)
     {
-        $self->{source} = $source;    
+        $self->{source} = $source;
     }
     return $self->{source};
 }
 
-sub new 
+sub new
 {
-    my $class  = shift;
+    my $class = shift;
 
     my $self = {};
 
     bless $self, $class;
 
-    $self->{source} = undef; 
+    $self->{source}      = undef;
     $self->{destination} = undef;
 
     ## Parsing files. ##
@@ -177,8 +177,6 @@ sub new
 
     return $self;
 }
-
-
 
 =head1 AUTHOR
 
@@ -237,4 +235,4 @@ See L<http://dev.perl.org/licenses/> for more information.
 
 =cut
 
-1; # End of Pod::Generate::Recursive
+1;    # End of Pod::Generate::Recursive
