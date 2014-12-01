@@ -25,7 +25,6 @@ BEGIN
 use Data::Dumper qw(Dumper);
 use File::Find qw( finddepth );
 use File::Path qw( make_path );
-use Path::Class;
 use Pod::POM;
 use Pod::POM::View::Pod;
 
@@ -35,11 +34,11 @@ Pod::Generate::Recursive - Generate POD for directory contents.
 
 =head1 VERSION
 
-Version 0.02
+Version 0.3
 
 =cut
 
-our $VERSION = '0.01';
+our $VERSION = '0.3';
 
 =head1 SYNOPSIS
 

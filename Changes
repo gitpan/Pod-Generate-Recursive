@@ -1,7 +1,10 @@
 Revision history for Pod-Generate-Recursive
 
-0.01    Nov 6, 2014
-        First release. Basic options work. 
+0.3    Dec 1, 2014
+       Adjust version and remove useless include to fix CPAN tests.
 
-0.02    Nov 8, 2014
-        Second release. Fix CPAN test error. 
+0.2    Nov 8, 2014
+       Second release. Fix CPAN test error. 
+
+0.01   Nov 6, 2014
+       First release. Basic options work. 
